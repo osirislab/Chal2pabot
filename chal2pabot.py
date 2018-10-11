@@ -1,38 +1,35 @@
 #!/usr/bin/env python3
 
-SLACK_URL = 'https://hooks.slack.com/services/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'
-REPO_PATH = '~/osiris/RED'
-DEBUG = False
-TIMEOUT = 10
-
-
 import requests
 import socket
 import time
 import datetime
 import json
+from sys import argv
 from glob import glob
 from os import listdir as ls
 from art import *
 
+SLACK_URL = 'https://hooks.slack.com/services/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'
+REPO_PATH = argv[argv.index('--path')+1] if '--path' in argv else None
+DEBUG = False
+TIMEOUT = 10
 OFFLINE_CHALLENGES = set()
 CHALLENGE_MAP = dict()
 
-def load_ips():
+def find_ips():
     global CHALLENGE_MAP
-    if os.path.isfile('ip.json'):
-        print(warning, 'reading from challenge_map.json')
-        CHALLENGE_MAP = json.loads(open('challenge_map.json').read())
-    else:
-        challange_jsons = glob('{}/*/challange.json'.format(REPO_PATH))
-        for challange_json in challange_jsons:
-            chal_data=json.loads(open(challange_json).read())
-            if 'name' in chal_data and 'url' in chal_data:
-                CHALLENGE_MAP[chal_data['name']] = chal_data['url']
+    challange_jsons = glob('{}/*/challange.json'.format(REPO_PATH))
+    for challange_json in challange_jsons:
+        chal_data=json.loads(open(challange_json).read())
+        if 'name' in chal_data and 'url' in chal_data:
+            CHALLENGE_MAP[chal_data['name']] = chal_data['url']
+    write_state()
 
 def write_state():
     state_data = {
         'OFFLINE_CHALLENGES': list(OFFLINE_CHALLENGES),
+        'CHALLENGE_MAP'     : CHALLENGE_MAP
     }
     with open('state.json', 'w') as f:
         json.dump(
@@ -42,14 +39,18 @@ def write_state():
         )
 
 def load_state():
+    global OFFLINE_CHALLENGES, CHALLENGE_MAP
     if 'state.json' not in ls():
        write_state()
-    global OFFLINE_CHALLENGES
     with open('state.json', 'r') as f:
-        OFFLINE_CHALLENGES = set(json.loads(f.read())['OFFLINE_CHALLENGES'])
+        state_data = json.loads(f.read())
+        OFFLINE_CHALLENGES = set (state_data['OFFLINE_CHALLENGES'])
+        CHALLENGE_MAP      = dict(state_data['CHALLENGE_MAP'])
 
-def startup():
-    load_ips()
+
+def startup(init=False):
+    if init:
+        find_ips
     load_state()
 
 def check_http(url):
@@ -65,11 +66,10 @@ def check_sock(url):
         sock = socket.socket()
         sock.settimeout(TIMEOUT)
         sock.connect((url, int(port)))
-        sock.send('blah\n'.encode())
+        sock.send('chal2pabot\n'.encode())
         sock.recv(1024)
         return True
     except:
-        pass
         return False
 
 
@@ -144,6 +144,9 @@ def check():
 
 if __name__ == "__main__":
     print(gen_ascii('chal2pabot', font='starwars', c='yellow', frame='red'))
+    if '--init' in argv:
+        startup(True)
+        exit(0)
     startup()
     while True:
         check()
