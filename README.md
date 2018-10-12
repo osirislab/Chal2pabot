@@ -2,7 +2,6 @@
 <p align="center">
    <img src="https://raw.githubusercontent.com/osirislab/Chal2pabot/master/chal2pa.png" width=500 title="hover text">
 <p>
-![alt text](https://raw.githubusercontent.com/osirislab/Chal2pabot/master/chal2pa.png)
 
 
 # Description
