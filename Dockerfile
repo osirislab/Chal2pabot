@@ -2,7 +2,7 @@ FROM ubuntu:18.04
 MAINTAINER John Cunniff
 
 ENV NAME Chal2pabot
-ENV REPO_PATH "~/osiris/RED"
+ENV REPO_PATH "/root/osiris/RED"
 
 RUN echo "Setting challenge path to ${REPO_PATH}"
 

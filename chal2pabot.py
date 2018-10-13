@@ -19,11 +19,12 @@ CHALLENGE_MAP = dict()
 
 def find_ips():
     global CHALLENGE_MAP
-    challange_jsons = glob('{}/*/challange.json'.format(REPO_PATH))
-    for challange_json in challange_jsons:
-        chal_data=json.loads(open(challange_json).read())
+    challenge_jsons = glob('{}/**/challenge.json'.format(REPO_PATH),recursive=True)
+    for challenge_json in challenge_jsons:
+        chal_data=json.loads(open(challenge_json).read())
         if 'name' in chal_data and 'url' in chal_data:
             CHALLENGE_MAP[chal_data['name']] = chal_data['url']
+    print('Generating state.json with CHALLENGE_MAP:', json.dumps(CHALLENGE_MAP,indent=4))
     write_state()
 
 def write_state():
@@ -50,7 +51,7 @@ def load_state():
 
 def startup(init=False):
     if init:
-        find_ips
+        find_ips()
     load_state()
 
 def check_http(url):
