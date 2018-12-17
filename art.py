@@ -1,8 +1,6 @@
 import pyfiglet
 from colorama import Fore, Style
 
-
-
 def color(s, c):
     return Fore.__dict__[c.upper()] + s + Style.RESET_ALL
 

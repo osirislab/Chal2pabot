@@ -5,25 +5,75 @@ import socket
 import time
 import datetime
 import json
-from sys import argv
+import argparse
+import os
 from glob import glob
 from os import listdir as ls
 from art import *
 
-SLACK_URL = 'https://hooks.slack.com/services/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'
-REPO_PATH = argv[argv.index('--path')+1] if '--path' in argv else None
-DEBUG = False
-TIMEOUT = 10
+def parse_args():
+    parser=argparse.ArgumentParser(description='Chal2pa motherf*cker')
+    parser.add_argument(
+        '--init',
+        dest='init',
+        default=False,
+        action='store_true',
+        help='init state for program to set up challenge map (challenge checking does not run)'
+    )
+    parser.add_argument(
+        '--debug',
+        dest='debug',
+        default=False,
+        action='store_true',
+        help='doesn\'t bitch in slack'
+    )
+    parser.add_argument(
+        '-p', '--path',
+        dest='path',
+        type=str,
+        default='./',
+        help='path to repo (containing challenge.json\'s), or challenge_map.json file'
+    )
+    parser.add_argument(
+        '-t', '--timeout',
+        dest='timeout',
+        type=int,
+        default=10,
+        help='timeout for challenge checking in seconds (default: 10)'
+    )
+    parser.add_argument(
+        '-s', '--slack-url',
+        dest='slack',
+        type=str,
+        default='https://hooks.slack.com/services/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',
+        help='slack hook url for chal2pa to bitch to when a challenge is down'
+    )
+    return parser.parse_args()
+
+args=parse_args()
+
+SLACK_URL = '' #'https://hooks.slack.com/services/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'
+PATH=args.path
+INIT=args.init
+DEBUG=args.debug
+TIMEOUT=args.timeout
 OFFLINE_CHALLENGES = set()
 CHALLENGE_MAP = dict()
 
-def find_ips():
+def find_ips(path):
     global CHALLENGE_MAP
-    challenge_jsons = glob('{}/**/challenge.json'.format(REPO_PATH),recursive=True)
-    for challenge_json in challenge_jsons:
-        chal_data=json.loads(open(challenge_json).read())
-        if 'name' in chal_data and 'url' in chal_data:
-            CHALLENGE_MAP[chal_data['name']] = chal_data['url']
+    if os.path.isfile('path'):
+        try:
+            CHALLENGE_MAP=json.loads(open(path).read())
+        except Json.decoder.JSONDecodeError as e:
+            print('JSONDecodeError', e)
+            exit(1)
+    elif os.path.isdir(path):
+        challenge_jsons = glob('{}/**/challenge.json'.format(REPO_PATH),recursive=True)
+        for challenge_json in challenge_jsons:
+            chal_data=json.loads(open(challenge_json).read())
+            if 'name' in chal_data and 'url' in chal_data:
+                CHALLENGE_MAP[chal_data['name']] = chal_data['url']
     print('Generating state.json with CHALLENGE_MAP:', json.dumps(CHALLENGE_MAP,indent=4))
     write_state()
 
@@ -145,10 +195,7 @@ def check():
 
 if __name__ == "__main__":
     print(gen_ascii('chal2pabot', font='starwars', c='yellow', frame='red'))
-    if '--init' in argv:
-        startup(True)
-        exit(0)
-    startup()
+    startup(INIT)
     while True:
         check()
         time.sleep(30)
