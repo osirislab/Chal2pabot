@@ -45,14 +45,14 @@ def parse_args():
         '-s', '--slack-url',
         dest='slack',
         type=str,
-        default='https://hooks.slack.com/services/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',
+        default='',
         help='slack hook url for chal2pa to bitch to when a challenge is down'
     )
     return parser.parse_args()
 
 args=parse_args()
 
-SLACK_URL = '' #'https://hooks.slack.com/services/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'
+SLACK_URL = args.slack
 PATH=args.path
 INIT=args.init
 DEBUG=args.debug

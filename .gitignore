@@ -1,3 +1,4 @@
 state.json
 challenge_map.json
 __pycache__
+.env

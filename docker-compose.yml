@@ -1,0 +1,7 @@
+version: '2'
+
+services:
+  chalbot:
+    build: .
+    environment:
+      SLACK: ${SLACK}
