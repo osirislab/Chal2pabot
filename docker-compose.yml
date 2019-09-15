@@ -5,3 +5,5 @@ services:
     build: .
     environment:
       SLACK: ${SLACK}
+    volumes:
+      - "./state.json:/bot/state.json"

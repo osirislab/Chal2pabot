@@ -104,14 +104,18 @@ def startup(init=False):
         find_ips()
     load_state()
 
-def check_http(url):
+def check_http(url, n=0):
+    if n == 3:
+        return False
     try:
         return requests.get(url, timeout=TIMEOUT).status_code == 200
     except:
+        return check_http(url, n+1)
+
+
+def check_sock(url, n=0):
+    if n == 3:
         return False
-
-
-def check_sock(url):
     try:
         url, port = url.split(':')
         sock = socket.socket()
@@ -121,10 +125,11 @@ def check_sock(url):
         sock.recv(1024)
         return True
     except:
-        return False
+        return check_sock(url, n+1)
 
 
 def check_chals():
+    global TIMEOUT
     chals = {}
     back_up = []
     for chal_name, url in CHALLENGE_MAP.items():
@@ -191,7 +196,7 @@ def check():
     if False in list(chals.values()):
         report_error(chals)
     display_chal_report(chals)
-    
+
 
 if __name__ == "__main__":
     print(gen_ascii('chal2pabot', font='starwars', c='yellow', frame='red'))
@@ -199,3 +204,4 @@ if __name__ == "__main__":
     while True:
         check()
         time.sleep(30)
+OB
