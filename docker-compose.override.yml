@@ -1,0 +1,26 @@
+version: '2'
+
+services:
+  chalbot:
+    build: chalbot
+    environment:
+      SLACK: ${SLACK}
+    volumes:
+      - "./state.json:/bot/state.json"
+
+  api:
+    build: api
+    ports:
+      - 5000:5000
+    command: "python3 app.py"
+    volumes:
+      - "./api:/opt/app"
+
+  db:
+    image: mariadb:10.4
+    #volumes:
+    #  - .mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=chalbot
+    

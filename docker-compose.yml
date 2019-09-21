@@ -1,9 +1,46 @@
 version: '2'
 
 services:
+  traefik:
+    image: "traefik:v2.0.0-rc3"
+    container_name: "traefik"
+    command:
+      #- "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.mytlschallenge.acme.tlschallenge=true"
+      #- "--certificatesresolvers.mytlschallenge.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--certificatesresolvers.mytlschallenge.acme.email=john@osiris.cyber.nyu.edu"
+      - "--certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "443:443"
+      #- "8080:8080"
+    volumes:
+      - "./.data/letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    
   chalbot:
-    build: .
+    build: chalbot
     environment:
       SLACK: ${SLACK}
+    labels:
+      - "traefik.enable=false"
+
+  api:
+    build: api
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=Host:api"
+
+  db:
+    image: mariadb:10.4
     volumes:
-      - "./state.json:/bot/state.json"
+     - "./.data/mysql:/var/lib/mysql"
+    environment:
+      - "MYSQL_ROOT_PASSWORD=password"
+      - "MYSQL_DATABASE=chalbot"
+    labels:
+      - "traefik.enable=false"
+    
